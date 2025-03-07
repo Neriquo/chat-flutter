@@ -3,7 +3,7 @@ import 'package:flash_chat/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-User loggedInUser;
+User? loggedInUser;
 
 class ChatScreen extends StatefulWidget {
   static String id = 'chat_screen';
@@ -13,7 +13,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  String messageText;
+  late String messageText;
 
   final messageTextController = TextEditingController();
 
@@ -72,12 +72,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
-                  FlatButton(
+                  TextButton(
                     onPressed: () {
                       messageTextController.clear();
                       FirebaseFirestore.instance.collection('messages').add({
                         'text': messageText,
-                        'sender': loggedInUser.email,
+                        'sender': loggedInUser?.email,
                         'created_at': Timestamp.now(),
                       });
                     },
@@ -104,13 +104,13 @@ class MessagesStream extends StatelessWidget {
         List<MessageBubble> messagesWidget = [];
 
         if (snapshot.hasData) {
-          final messages = snapshot.data.docs;
+          final messages = snapshot.data?.docs;
 
-          for (var message in messages) {
+          for (var message in messages!) {
             final messageText = (message.data() as Map)['text'];
             final messageSender = (message.data() as Map)['sender'];
 
-            final currentUser = loggedInUser.email;
+            final currentUser = loggedInUser?.email;
 
             final messageWidget = MessageBubble(
               sender: messageSender,
@@ -143,7 +143,7 @@ class MessageBubble extends StatelessWidget {
   final String text;
   final bool isMe;
 
-  MessageBubble({this.sender, this.text, this.isMe});
+  MessageBubble({required this.sender, required this.text, required this.isMe});
 
   @override
   Widget build(BuildContext context) {
